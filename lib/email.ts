@@ -1,6 +1,8 @@
 // Email service for sending medication reminders
 // This uses a simple approach with nodemailer or can be configured with services like SendGrid, Resend, etc.
 
+import nodemailer from 'nodemailer';
+
 interface MedicationReminderParams {
   to: string;
   medicationName: string;
@@ -249,11 +251,33 @@ async function sendWithSendGrid(to: string, medicationName: string, scheduledTim
   }
 }
 
-// Nodemailer implementation (requires nodemailer package)
+// Nodemailer implementation
 async function sendWithNodemailer(to: string, medicationName: string, scheduledTime: string, html: string, text: string) {
-  // Note: This requires installing nodemailer
-  // For now, we'll just log it
-  console.log('Nodemailer not implemented yet. Install nodemailer package to use SMTP.');
-  console.log(`Would send email to: ${to}`);
-  return { success: true, message: 'Nodemailer not configured' };
+  try {
+    // Create transporter with SMTP configuration
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    // Send email
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      to: to,
+      subject: `💊 Medication Reminder: ${medicationName} at ${scheduledTime}`,
+      text: text,
+      html: html,
+    });
+
+    console.log('Email sent successfully:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending email with Nodemailer:', error);
+    throw error;
+  }
 }

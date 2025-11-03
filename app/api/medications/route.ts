@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id || session.user?.email;
+    // Always use email as userId for consistency (email is more reliable than session id)
+    const userId = session.user?.email || (session.user as any).id;
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active') === 'true';
 
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id || session.user?.email;
+    // Always use email as userId for consistency (email is more reliable than session id)
+    const userId = session.user?.email || (session.user as any).id;
     const {
       name,
       frequency,
@@ -93,7 +95,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id || session.user?.email;
+    // Always use email as userId for consistency (email is more reliable than session id)
+    const userId = session.user?.email || (session.user as any).id;
     const { id, ...updates } = await request.json();
 
     if (!id) {
@@ -136,7 +139,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id || session.user?.email;
+    // Always use email as userId for consistency (email is more reliable than session id)
+    const userId = session.user?.email || (session.user as any).id;
     const { searchParams } = new URL(request.url);
     const medicationId = searchParams.get('id');
 
